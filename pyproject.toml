@@ -1,0 +1,12 @@
+[tool.poetry]
+name = "devops-lab"
+version = "0.1.0"
+description = "A small DevOps learning lab"
+
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+
+[tool.ruff]
+line-length = 88
+select = ["E", "F", "W", "I", "B", "C", "N"]
