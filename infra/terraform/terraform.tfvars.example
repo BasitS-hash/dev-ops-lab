@@ -1,0 +1,28 @@
+# terraform.tfvars.example
+# ─────────────────────────────────────────────────────────────────────────────
+# Copy this file to terraform.tfvars and fill in your values.
+# terraform.tfvars is gitignored to prevent accidental secret commits.
+#
+#   cp terraform.tfvars.example terraform.tfvars
+#
+# Alternatively, export TF_VAR_* environment variables in your shell or CI:
+#   export TF_VAR_environment=staging
+#   export TF_VAR_replica_count=3
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Target environment — must be one of: dev, staging, prod
+environment = "dev"
+
+# Logical application identifier — lowercase, hyphens allowed, 3-30 chars
+app_name = "devops-lab"
+
+# Number of application replicas (1-10)
+replica_count = 2
+
+# Additional resource tags merged with module defaults.
+# The module always injects: Environment, Application, ManagedBy, Repository.
+tags = {
+  Owner      = "platform-team"
+  CostCenter = "engineering"
+  Terraform  = "true"
+}
