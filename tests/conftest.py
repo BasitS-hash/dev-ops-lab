@@ -4,6 +4,7 @@ Root conftest.py — shared fixtures for integration-level tests.
 App-unit fixtures live in app/tests/conftest.py.
 Add project-wide fixtures (e.g. tmp directories, shared mocks) here.
 """
+
 import os
 import sys
 

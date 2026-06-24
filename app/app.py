@@ -64,13 +64,16 @@ def health() -> Any:
     """Liveness/readiness probe — always returns 200 when the process is up."""
     uptime: float = round(time.monotonic() - START_TIME, 3)
     logger.info("GET /health uptime=%.3fs", uptime)
-    return jsonify(
-        {
-            "status": "healthy",
-            "uptime_seconds": uptime,
-            "version": APP_VERSION,
-        }
-    ), 200
+    return (
+        jsonify(
+            {
+                "status": "healthy",
+                "uptime_seconds": uptime,
+                "version": APP_VERSION,
+            }
+        ),
+        200,
+    )
 
 
 @app.route("/metrics")
