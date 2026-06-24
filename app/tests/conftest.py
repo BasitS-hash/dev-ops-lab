@@ -1,19 +1,26 @@
-# Ensure repository root is on sys.path so `from app import app` works
 import os
 import sys
 
+# Ensure the app directory is importable regardless of how pytest is invoked
 HERE = os.path.dirname(__file__)
-REPO_ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
-if REPO_ROOT not in sys.path:
-    sys.path.insert(0, REPO_ROOT)
+APP_DIR = os.path.abspath(os.path.join(HERE, ".."))
+if APP_DIR not in sys.path:
+    sys.path.insert(0, APP_DIR)
 
-# Provide a small werkzeug shim if needed for some runner environments
-try:
-    import werkzeug
+import pytest
 
-    if not hasattr(werkzeug, "__version__") or werkzeug.__version__ is None:
-        werkzeug.__version__ = "3.1.5"
-except Exception:
-    # If werkzeug isn't installed in the environment, tests that require Flask
-    # will fail later with a clear ImportError; ignore shim failures here.
-    pass
+
+@pytest.fixture
+def client():
+    """Flask test client configured for the testing environment."""
+    # Set env vars before importing the module so module-level reads pick them up
+    os.environ.setdefault("APP_ENV", "testing")
+    os.environ.setdefault("APP_VERSION", "0.0.0-test")
+    os.environ.setdefault("LOG_LEVEL", "WARNING")
+    os.environ.setdefault("PORT", "5000")
+
+    from app import app
+
+    app.config["TESTING"] = True
+    with app.test_client() as c:
+        yield c
