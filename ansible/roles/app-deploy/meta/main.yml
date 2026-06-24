@@ -1,0 +1,22 @@
+---
+galaxy_info:
+  author: devops-lab
+  description: >
+    Deploys the DevOps Lab application as a Docker container,
+    verifies the health endpoint, and reports a deployment summary.
+  license: MIT
+  min_ansible_version: "2.13"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - focal
+        - jammy
+    - name: EL
+      versions:
+        - "8"
+        - "9"
+  categories:
+    - system
+    - docker
+
+dependencies: []

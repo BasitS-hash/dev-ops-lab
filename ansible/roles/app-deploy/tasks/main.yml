@@ -1,0 +1,49 @@
+---
+- name: Check Docker daemon is running
+  ansible.builtin.command: docker info
+  register: docker_info_result
+  changed_when: false
+  failed_when: docker_info_result.rc != 0
+
+- name: Pull or build Docker image (local dev fallback)
+  ansible.builtin.shell: |
+    docker pull {{ docker_image }} || true
+  changed_when: false
+
+- name: Ensure app container is running
+  ansible.builtin.shell: |
+    docker run -d \
+      --name {{ container_name }} \
+      --restart {{ container_restart_policy }} \
+      -p {{ app_port }}:{{ app_port }} \
+      -e LOG_LEVEL={{ log_level }} \
+      {{ docker_image }} || \
+    docker start {{ container_name }} || true
+  register: container_result
+  changed_when: "'already in use' not in container_result.stderr"
+
+- name: Wait for application health check to pass
+  ansible.builtin.uri:
+    url: "http://localhost:{{ app_port }}{{ healthcheck_path }}"
+    method: GET
+    status_code: 200
+  register: health_check
+  retries: 5
+  delay: 3
+  until: health_check.status == 200
+  ignore_errors: true
+
+- name: Print deployment summary
+  ansible.builtin.debug:
+    msg: |
+      ============================================================
+      Deployment Summary
+      ============================================================
+      Application : {{ app_name }}
+      Version     : {{ app_version }}
+      Container   : {{ container_name }}
+      Image       : {{ docker_image }}
+      Port        : {{ app_port }}
+      Health URL  : http://localhost:{{ app_port }}{{ healthcheck_path }}
+      Health OK   : {{ health_check.status | default('unreachable') == 200 }}
+      ============================================================

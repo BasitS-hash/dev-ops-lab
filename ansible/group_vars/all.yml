@@ -1,0 +1,7 @@
+---
+app_name: devops-lab
+app_version: "1.0.0"
+app_port: 5000
+docker_image: "devops-lab:latest"
+healthcheck_path: "/health"
+log_level: "INFO"

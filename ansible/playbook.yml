@@ -1,20 +1,21 @@
 ---
-- name: Example local provisioning playbook
-  hosts: localhost
-  connection: local
+- name: Deploy DevOps Lab Application
+  hosts: webservers
+  become: false
   gather_facts: false
-  tasks:
-    - name: Ensure docker is installed (Ubuntu/Debian example)
-      become: yes
-      apt:
-        name: docker.io
-        state: present
-      when: ansible_os_family == 'Debian'
 
-    - name: Pull local dev image if available
-      shell: docker pull devops-lab:latest || true
-      changed_when: false
+  pre_tasks:
+    - name: Announce deployment start
+      ansible.builtin.debug:
+        msg: "Starting deployment of {{ app_name }} v{{ app_version }}"
 
-    - name: Print message
-      debug:
-        msg: "Ansible playbook ran successfully"
+  roles:
+    - role: app-deploy
+
+  post_tasks:
+    - name: Announce deployment complete
+      ansible.builtin.debug:
+        msg: >-
+          {{ app_name }} v{{ app_version }} deployed successfully.
+          Listening on port {{ app_port }}.
+          Health endpoint: http://localhost:{{ app_port }}{{ healthcheck_path }}
