@@ -1,7 +1,10 @@
 [tool.poetry]
 name = "devops-lab"
-version = "0.1.0"
-description = "A small DevOps learning lab"
+version = "1.0.0"
+description = "A full-stack DevOps portfolio lab: Docker, Kubernetes, Ansible, Terraform, GitHub Actions CI/CD"
+authors = []
+license = "MIT"
+readme = "README.md"
 
 [tool.black]
 line-length = 88
@@ -9,4 +12,22 @@ target-version = ["py311"]
 
 [tool.ruff]
 line-length = 88
+
+[tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "C", "N"]
+ignore = ["E501"]  # line length enforced by black
+
+[tool.pytest.ini_options]
+testpaths = ["app/tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+[tool.coverage.run]
+source = ["app"]
+omit = ["*/tests/*", "*/conftest.py"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 70

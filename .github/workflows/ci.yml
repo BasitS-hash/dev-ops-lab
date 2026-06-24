@@ -1,46 +1,163 @@
+---
 name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  test-and-build:
+  # ── Python app: lint + test ─────────────────────────────────────────────────
+  app-test:
+    name: App — lint & test
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: app/requirements.txt
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r app/requirements.txt
+      - name: Install app dependencies
+        run: pip install -r requirements.txt
 
       - name: Install dev tooling
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements-dev.txt
+        working-directory: ${{ github.workspace }}
+        run: pip install -r requirements-dev.txt
 
-      - name: Run linters and format checks
-        run: |
-          # Ruff will check for issues; Black will check formatting
-          ruff check .
-          black --check .
+      - name: Ruff lint
+        working-directory: ${{ github.workspace }}
+        run: ruff check .
 
-      - name: Run tests
+      - name: Black format check
+        working-directory: ${{ github.workspace }}
+        run: black --check .
+
+      - name: Run tests with coverage
+        working-directory: ${{ github.workspace }}
         env:
           PYTHONPATH: ${{ github.workspace }}
-        run: python -m pytest -q
+          APP_ENV: testing
+        run: pytest app/tests/ -v --cov=app --cov-report=term-missing --cov-fail-under=70
 
-      - name: Build Docker image
-        uses: docker/build-push-action@v4
+      - name: Build Docker image (smoke test)
+        uses: docker/build-push-action@v6
         with:
+          context: app
           push: false
           tags: devops-lab:ci
+
+  # ── YAML lint ───────────────────────────────────────────────────────────────
+  yaml-lint:
+    name: YAML lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Lint all YAML files
+        run: |
+          yamllint -d '{extends: default, rules: {line-length: {max: 120}, truthy: disable}}' \
+            ansible/ k8s/ docker-compose.yml .github/workflows/
+
+  # ── Kubernetes manifest validation ──────────────────────────────────────────
+  k8s-validate:
+    name: K8s manifests — kubeconform
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install kubeconform
+        run: |
+          curl -sSL https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz \
+            | tar -xz -C /usr/local/bin kubeconform
+          kubeconform -v
+
+      - name: Validate K8s manifests
+        run: |
+          kubeconform \
+            -strict \
+            -ignore-missing-schemas \
+            -kubernetes-version 1.29.0 \
+            -summary \
+            k8s/*.yaml
+
+  # ── Terraform fmt + validate ─────────────────────────────────────────────────
+  terraform-validate:
+    name: Terraform — fmt & validate
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra/terraform
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.9"
+
+      - name: Terraform Format check
+        run: terraform fmt -check -recursive
+
+      - name: Terraform Init
+        run: terraform init -backend=false
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Run tflint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: latest
+
+      - name: TFLint init
+        run: tflint --init
+
+      - name: TFLint run
+        run: tflint --recursive
+
+  # ── Ansible lint ────────────────────────────────────────────────────────────
+  ansible-lint:
+    name: Ansible lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ansible-lint
+        run: pip install ansible-lint
+
+      - name: Run ansible-lint
+        run: |
+          ansible-lint ansible/playbook.yml \
+            --exclude ansible/roles/app-deploy/tasks/main.yml \
+            || true  # warn-only until role tasks are fully idempotent
+
+  # ── Secret scanning (gitleaks) ───────────────────────────────────────────────
+  gitleaks:
+    name: Secret scan — gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

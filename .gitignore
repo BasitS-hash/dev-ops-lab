@@ -1,16 +1,78 @@
-# Python
+# ── Python ────────────────────────────────────────────────────────────────────
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+pip-wheel-metadata/
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# ── Virtual environments ───────────────────────────────────────────────────────
+.venv/
+venv/
+env/
 .env
+.env.*
+!.env.example
 
-# Terraform
-.terraform/
+# ── Terraform ─────────────────────────────────────────────────────────────────
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+*.tfplan
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+# Keep the example tfvars, never commit real ones
+terraform.tfvars
+!terraform.tfvars.example
 
-# VSCode
-.vscode/
+# ── Ansible ───────────────────────────────────────────────────────────────────
+*.retry
+ansible/vault_password
+ansible/.vault_password
 
-# macOS
-.DS_Store
-
-# Docker
+# ── Docker ────────────────────────────────────────────────────────────────────
 docker-compose.override.yml
+
+# ── Kubernetes ────────────────────────────────────────────────────────────────
+kubeconfig
+*.kubeconfig
+
+# ── Secrets / credentials ─────────────────────────────────────────────────────
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+id_rsa
+id_ed25519
+*.secrets
+secrets/
+credentials.json
+
+# ── OS / IDE ──────────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+logs/

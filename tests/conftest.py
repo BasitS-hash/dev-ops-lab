@@ -1,7 +1,13 @@
-# Test shim to ensure werkzeug exposes __version__ for Flask test utilities
-import werkzeug
+"""
+Root conftest.py — shared fixtures for integration-level tests.
 
-if not hasattr(werkzeug, "__version__") or werkzeug.__version__ is None:
-    # Provide a minimal version string to satisfy Flask's version checks
-    # in testing utilities (keeps this line under the configured limit)
-    werkzeug.__version__ = "3.1.5"
+App-unit fixtures live in app/tests/conftest.py.
+Add project-wide fixtures (e.g. tmp directories, shared mocks) here.
+"""
+import os
+import sys
+
+# Ensure repo root is importable for all test modules
+REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
+if REPO_ROOT not in sys.path:
+    sys.path.insert(0, os.path.dirname(REPO_ROOT))
