@@ -16,6 +16,17 @@
 # Terraform cannot model natively.
 # ─────────────────────────────────────────────────────────────────────────────
 
+terraform {
+  required_version = ">= 1.5.0"
+
+  required_providers {
+    null = {
+      source  = "hashicorp/null"
+      version = "~> 3.0"
+    }
+  }
+}
+
 # ── Config-drift sentinel ─────────────────────────────────────────────────────
 # triggers is a map of arbitrary key/value pairs. Terraform computes a diff
 # against the state on every plan. If any value changes, the resource is

@@ -31,6 +31,11 @@ output "deployment_label" {
   value       = module.app_config.deployment_label
 }
 
+output "name_prefix" {
+  description = "Naming prefix used for resources in this workspace (format: <app_name>-<environment>)."
+  value       = local.name_prefix
+}
+
 output "common_tags" {
   description = "The merged tag map applied to all resources in this workspace."
   value       = local.common_tags

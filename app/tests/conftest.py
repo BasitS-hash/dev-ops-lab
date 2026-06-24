@@ -7,7 +7,7 @@ APP_DIR = os.path.abspath(os.path.join(HERE, ".."))
 if APP_DIR not in sys.path:
     sys.path.insert(0, APP_DIR)
 
-import pytest
+import pytest  # noqa: E402
 
 
 @pytest.fixture
