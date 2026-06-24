@@ -53,7 +53,7 @@ jobs:
         run: pytest app/tests/ -v --cov=app --cov-report=term-missing --cov-fail-under=70
 
       - name: Build Docker image (smoke test)
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: app
           push: false
