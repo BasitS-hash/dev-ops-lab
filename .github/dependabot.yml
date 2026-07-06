@@ -5,7 +5,7 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
+      interval: "monthly"
       day: monday
       time: "09:00"
       timezone: America/Toronto
@@ -20,7 +20,7 @@ updates:
   - package-ecosystem: pip
     directory: /app
     schedule:
-      interval: weekly
+      interval: "monthly"
       day: monday
       time: "09:00"
       timezone: America/Toronto
@@ -34,7 +34,7 @@ updates:
   - package-ecosystem: pip
     directory: /
     schedule:
-      interval: weekly
+      interval: "monthly"
       day: monday
       time: "09:00"
       timezone: America/Toronto
@@ -50,7 +50,7 @@ updates:
   - package-ecosystem: docker
     directory: /app
     schedule:
-      interval: weekly
+      interval: "monthly"
       day: monday
     labels:
       - dependencies
